@@ -4,10 +4,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -15,26 +17,52 @@ import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.TimePicker;
+
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
+    private TimePicker timePicker;
+    private AlarmManager alarmManager;
+    private int hours, minutes;
+
+    public static Context mContext;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
-
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        MainActivity mContext = this;
     }
 
     public void setAlarm(View view){
-        
+
+        alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+
+        // 메모) 조건문을 만들어서 android 12 이전 버전은 FLAG_MUTABLE로 pendingIntent를 선언해야 할 수도 있음
+        Intent intent = new Intent(this, AlarmReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0, intent, PendingIntent.FLAG_MUTABLE );
+
+        timePicker = findViewById(R.id.time_picker);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            hours = timePicker.getHour();
+            minutes = timePicker.getMinute();
+        }
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.HOUR_OF_DAY, hours);
+        calendar.set(Calendar.MINUTE, minutes);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+
+        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
 
 
     public void onAlarm(View view) {
 
-        /*
         // ringtone
         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
@@ -77,9 +105,7 @@ public class MainActivity extends AppCompatActivity {
         // notificationId is a unique int for each notification that you must define
         notificationManager.notify(22, mNotification);
 
-        */
 
-        Log.i("mytag","앙");
     }
 
 }
