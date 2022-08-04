@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        MainActivity mContext = this;
+        mContext = this;
     }
 
     public void setAlarm(View view){
@@ -57,11 +57,12 @@ public class MainActivity extends AppCompatActivity {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        alarmManager.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+
     }
 
 
-    public void onAlarm(View view) {
+    public void onAlarm() {
 
         // ringtone
         Uri alarmSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
@@ -77,7 +78,8 @@ public class MainActivity extends AppCompatActivity {
                 .setContentText("초비사사사사사사아아아아앙")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(pendingIntent)
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setFullScreenIntent(pendingIntent, true);
 
         builder.setSound(alarmSound);
 
