@@ -3,6 +3,7 @@ package com.example.hanarotgtest;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.room.Room;
 
 import android.app.AlarmManager;
 import android.app.Notification;
@@ -23,6 +24,8 @@ import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity {
 
+    public AlarmDao alarmDao;
+
     private TimePicker timePicker;
     private AlarmManager alarmManager;
     private int hours, minutes;
@@ -34,6 +37,14 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mContext = this;
+
+        // 로컬 데이터베이스 사용 설정
+        AlarmDatabase database = Room.databaseBuilder(getApplicationContext(), AlarmDatabase.class, "alarmDB")
+                .fallbackToDestructiveMigration() // 스키마 버전 변경 허용
+                .allowMainThreadQueries() // 메인쓰레드 DB IO 허용
+                .build(); //
+        alarmDao = database.alarmDao();
+
     }
 
     public void setAlarm(View view){
@@ -57,10 +68,23 @@ public class MainActivity extends AppCompatActivity {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        long alarmMillis = calendar.getTimeInMillis();
+
+        alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, alarmMillis, pendingIntent);
+
+        setAlarmDB(alarmMillis);
 
     }
 
+
+    public void setAlarmDB (long alarmMillis){
+        // 해당 알람 로컬 DB에 저장 객체 생성
+        Alarm alarm = new Alarm();
+        alarm.setDate(alarmMillis);
+
+        // 로컬 DB에 저장
+        alarmDao.setInsertAlarm(alarm);
+    }
 
     public void onAlarm() {
 
